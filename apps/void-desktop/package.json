@@ -11,7 +11,10 @@
   },
   "dependencies": {
     "@void/core": "workspace:*",
-    "eventemitter3": "^5.0.0"
+    "@void/daw": "workspace:*",
+    "@void/ui": "workspace:*",
+    "eventemitter3": "^5.0.0",
+    "tone": "^15.0.4"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
