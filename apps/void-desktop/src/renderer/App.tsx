@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
-import { eventBus, TrackType } from '@void/core'
+import { eventBus, TrackType, type ClipData } from '@void/core'
 import { WebAudioAdapter } from '@void/daw'
 import { Mixer, type MixerTrack } from '@void/daw'
+import { Timeline, type TimelineTrack, type TimelineClip } from '@void/daw'
 import { Panel } from '@void/ui'
 
 /**
@@ -9,9 +10,11 @@ import { Panel } from '@void/ui'
  */
 export default function App() {
   const [tracks, setTracks] = useState<MixerTrack[]>([])
+  const [timelineTracks, setTimelineTracks] = useState<TimelineTrack[]>([])
   const [isPlaying, setIsPlaying] = useState(false)
   const [bpm, setBpm] = useState(120)
   const audioAdapter = useRef<WebAudioAdapter | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
 
   useEffect(() => {
     console.log('[VOID] App component mounted')
