@@ -1,0 +1,24 @@
+{
+  "name": "void",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "setup:sidecar": "tsx scripts/setup.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "prettier": "^3.3.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.5.0",
+    "turbo": "^2.1.0",
+    "tsx": "^4.16.0"
+  }
+}
