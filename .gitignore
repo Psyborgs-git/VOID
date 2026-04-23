@@ -1,0 +1,7 @@
+node_modules
+dist
+.turbo
+packages/void-core/dist
+packages/void-daw/dist
+packages/void-core/tsconfig.tsbuildinfo
+*.tsbuildinfo
