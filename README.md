@@ -9,13 +9,14 @@
 
 VOID is an Electron-based desktop application that replaces Logic Pro X for power users who want:
 
-- A **professional multi-track DAW** with mixer, automation, and timeline
-- A **modular node-graph synthesizer** (Eurorack-style, in software)
+- A **professional multi-track DAW** with absolute "Ableton Live" parity (Session View/Clip Matrix, advanced Audio Warping, Groove Pool, and stock devices)
+- A **modular node-graph synthesizer** and **Max for Live equivalent** (Eurorack-style, in software, powered by WASM)
 - An **AI copilot** that learns your musical identity and co-creates with you
 - A **live visual engine** with WebGL shaders, projection mapping, and a live coding environment
 - A **show cue-list** for designing full festival/concert sets from start to finish
 - **MIDI/OSC/DMX** connectivity to any hardware in your studio or on stage
 - **Stem separation, music generation, and AI sound design** — all running locally
+- **Generative plugins and dynamic pipelines** — chain AI models, WASM modules, and Python sidecar tasks for endless generative music
 
 Everything runs on your machine. No subscriptions. No cloud lock-in. Cross-platform: macOS, Windows, Linux.
 
@@ -86,9 +87,12 @@ void/
 │   │   │   ├── Sequencer.ts        # Timeline playback, loop, punch-in/out
 │   │   │   ├── Transport.ts        # BPM, time signature, play/stop/record
 │   │   │   ├── Automation.ts       # Automation lane engine
+│   │   │   ├── AudioWarp.ts        # Advanced audio warping algorithms
+│   │   │   ├── GroovePool.ts       # Groove extraction and quantization
 │   │   │   └── AudioWorklets/      # Custom DSP processors (pitch, time-stretch, etc.)
 │   │   └── components/
-│   │       ├── Timeline/           # Scrollable multi-track timeline
+│   │       ├── SessionView/        # Ableton-style Clip Matrix for non-linear performance
+│   │       ├── Timeline/           # Scrollable multi-track Arrangement View
 │   │       ├── TrackLane/          # Individual track row
 │   │       ├── ClipBlock/          # Draggable audio/MIDI clip
 │   │       ├── Mixer/              # Vertical channel strip layout
@@ -174,10 +178,13 @@ void/
 │   │       ├── OSCRouter.tsx       # UI: view/filter/test OSC routing
 │   │       └── DMXBridge.ts        # OSC → DMX (via sACN/ArtNet bridge)
 │   │
-│   ├── void-plugins/               # WASM plugin system + marketplace
+│   ├── void-plugins/               # WASM plugin system + marketplace + dynamic pipelines
 │   │   ├── sandbox/
 │   │   │   ├── WASMSandbox.ts      # Secure WASM execution environment
 │   │   │   └── PluginRuntime.ts    # Lifecycle: init, process, destroy
+│   │   ├── pipelines/
+│   │   │   ├── GenerativePipeline.ts # Chaining AI sidecar + WASM modules for generative audio/MIDI
+│   │   │   └── PipelineNode.ts     # Individual node in a generative pipeline
 │   │   ├── registry/
 │   │   │   ├── PluginRegistry.ts   # Local manifest store (JSON/SQLite)
 │   │   │   └── PluginLoader.ts     # Load, validate, hot-reload plugins
@@ -707,20 +714,23 @@ Deliverables:
 
 Done when: App opens, main process communicates with renderer via typed IPC.
 
-### Phase 2 — Audio Engine
+### Phase 2 — Audio Engine & Ableton Parity Foundation
 
-**Goal:** Play audio, multi-track timeline, basic mixer
+**Goal:** Play audio, Session View (Clip Matrix), Arrangement View (timeline), basic mixer, and Groove Pool.
 
 Deliverables:
 
 - `void-daw` package: `WebAudioAdapter.ts` (implements `AudioPort`)
 - Tone.js transport: play, stop, BPM, loop
-- Multi-track timeline UI (at least 8 tracks)
-- Clip placement and playback
+- **Session View**: Ableton-style clip matrix for triggering loops non-linearly
+- **Arrangement View**: Multi-track timeline UI for linear composition
+- Clip placement and playback (with **advanced Audio Warping algorithms**)
+- **Groove Pool**: extract and apply timing/velocity grooves across clips
 - Mixer: volume, pan, mute, solo
 - Level meters (VU)
+- **Stock Devices**: Implement core EQ, Compressor, Reverb, and Delay modules.
 
-Done when: Load an audio file, place it on a track, hit play, hear it.
+Done when: Load a drum loop into a Session View clip, warp it to tempo, apply a groove from the Groove Pool, trigger it, and adjust the stock EQ.
 
 ### Phase 3 — MIDI + OSC Hub
 
@@ -798,20 +808,21 @@ Deliverables:
 
 Done when: GLSL shader reacts to kick drum, output sends to projector.
 
-### Phase 8 — Plugin Marketplace
+### Phase 8 — Plugins, Max for Live Equivalent & Generative Pipelines
 
-**Goal:** Drop in WASM plugins, hot-reload without restart
+**Goal:** Drop in WASM plugins, hot-reload without restart, and build generative pipelines.
 
 Deliverables:
 
-- `void-plugins/sandbox`: WASM execution environment
+- `void-plugins/sandbox`: WASM execution environment (**Max for Live equivalent** for building custom devices)
+- `void-plugins/pipelines`: Dynamic node-based pipelines bridging WASM and Python sidecar for **generative music pipelines**
 - `void-plugins/registry`: manifest store + loader
 - `void-plugins/marketplace`: browse/install UI
 - Hot-reload: file watcher detects plugin changes, reloads in <1s
-- Example plugin: a simple distortion WASM plugin
+- Example plugin: a generative MIDI sequencer feeding a WASM synth
 - OSC auto-exposure for plugin parameters
 
-Done when: Drop a .wasm + manifest.json in the plugins folder, it appears and works.
+Done when: Drop a .wasm + manifest.json in the plugins folder, it appears and works. Chain it with a Python-based AI generative node in a dynamic pipeline.
 
 ### Phase 9 — Show & Cue System
 
