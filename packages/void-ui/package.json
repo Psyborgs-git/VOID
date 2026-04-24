@@ -1,0 +1,1 @@
+{"name":"void-ui","version":"1.0.0","main":"dist/src/index.js","types":"dist/src/index.d.ts","scripts":{"build":"tsc","dev":"tsc -w"},"peerDependencies":{"react":"*","@types/react":"*"}}

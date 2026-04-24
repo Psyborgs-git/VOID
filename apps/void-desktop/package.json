@@ -1,0 +1,1 @@
+{"name":"void-desktop","version":"1.0.0","main":"out/main/index.js","scripts":{"build":"electron-vite build","dev":"electron-vite dev"},"dependencies":{"void-ui":"workspace:*","void-core":"workspace:*","void-daw":"workspace:*"}}
