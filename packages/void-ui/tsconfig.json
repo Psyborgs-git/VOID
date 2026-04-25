@@ -1,0 +1,1 @@
+{"compilerOptions":{"outDir":"./dist","rootDir":".","target":"es2022","moduleResolution":"node","strict":true,"esModuleInterop":true,"declaration":true,"jsx":"react","ignoreDeprecations":"6.0"}}

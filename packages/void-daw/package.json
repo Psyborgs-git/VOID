@@ -1,17 +1,1 @@
-{
-  "name": "void-daw",
-  "version": "1.0.0",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc -w",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "dependencies": {
-    "void-core": "workspace:*"
-  },
-  "devDependencies": {
-    "typescript": "latest"
-  }
-}
+{"name":"void-daw","version":"1.0.0","main":"dist/index.js","types":"dist/index.d.ts","scripts":{"build":"tsc","dev":"tsc -w"},"dependencies":{"void-core":"workspace:*","react":"*"},"devDependencies":{"typescript":"^5.0.0","@types/react":"*"}}

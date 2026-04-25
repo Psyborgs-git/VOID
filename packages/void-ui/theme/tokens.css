@@ -1,0 +1,19 @@
+:root {
+  --void-bg: #0a0a0a;
+  --void-panel-bg: #171717;
+  --void-surface: #262626;
+  --void-border: #404040;
+
+  --void-accent: #7c3aed;
+  --void-accent-hover: #8b5cf6;
+
+  --void-text-primary: #f3f4f6;
+  --void-text-secondary: #9ca3af;
+  --void-text-muted: #6b7280;
+
+  --void-radius: 4px;
+  --void-spacing-sm: 4px;
+  --void-spacing-md: 8px;
+  --void-spacing-lg: 16px;
+  --void-spacing-xl: 24px;
+}

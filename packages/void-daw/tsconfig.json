@@ -1,12 +1,1 @@
-{
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "outDir": "dist",
-    "declaration": true,
-    "rootDir": "src"
-  },
-  "include": ["src/**/*"],
-  "references": [
-    { "path": "../void-core" }
-  ]
-}
+{"compilerOptions":{"outDir":"./dist","rootDir":"./src","target":"es2022","moduleResolution":"node","strict":true,"esModuleInterop":true,"declaration":true,"jsx":"react"}}
