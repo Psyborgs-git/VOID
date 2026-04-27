@@ -8,7 +8,8 @@ export interface FaderProps {
   height?: number;
 }
 
-export const Fader: React.FC<FaderProps> = ({
+// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent components re-render but props haven't changed.
+export const Fader: React.FC<FaderProps> = React.memo(({
   value,
   min = 0,
   max = 1,
@@ -45,4 +46,6 @@ export const Fader: React.FC<FaderProps> = ({
       />
     </div>
   );
-};
+});
+
+Fader.displayName = 'Fader';

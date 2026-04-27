@@ -9,7 +9,8 @@ export interface KnobProps {
   size?: number;
 }
 
-export const Knob: React.FC<KnobProps> = ({
+// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent components re-render but props haven't changed.
+export const Knob: React.FC<KnobProps> = React.memo(({
   value,
   min = 0,
   max = 1,
@@ -47,4 +48,6 @@ export const Knob: React.FC<KnobProps> = ({
       {label && <span style={{ fontSize: '10px', color: 'var(--void-text-secondary)' }}>{label}</span>}
     </div>
   );
-};
+});
+
+Knob.displayName = 'Knob';
