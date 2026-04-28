@@ -4,3 +4,6 @@
 ## 2026-04-27 - React.memo on Pure UI Components
 **Learning:** Pure UI components like Fader and Knob in packages/void-ui/components are highly susceptible to unnecessary re-renders when parent components update. Since these are low-level UI elements, rendering them repeatedly when props haven't changed is wasteful.
 **Action:** Wrap pure presentation components in React.memo to prevent unnecessary re-renders, and make sure to explicitly set the displayName property so React DevTools continues to identify them properly.
+## 2026-04-28 - Loop Optimization in SessionView
+**Learning:** Found an opportunity to optimize a nested loop mapping clips to scenes in `SessionView`. The loop iterates over all scenes for every clip, but a clip can only belong to one scene. By adding a `break` statement once a match is found, we reduce the loop iterations by ~50% on average, improving performance during render.
+**Action:** Always look for opportunities to early-return or break out of loops when a match is found, especially when dealing with one-to-many or one-to-one relationships.

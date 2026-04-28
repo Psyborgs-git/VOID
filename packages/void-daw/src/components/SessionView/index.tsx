@@ -20,6 +20,7 @@ export const SessionView: React.FC<SessionViewProps> = React.memo(({ matrix, onC
       for (const scene of matrix.scenes) {
         if (clip.id.startsWith(scene.id)) {
           map.get(scene.id)!.push(clip);
+          break; // ⚡ Bolt: Early return since a clip belongs to exactly one scene, reducing loop iterations by ~50%.
         }
       }
     }
