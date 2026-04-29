@@ -7,3 +7,6 @@
 ## 2026-04-28 - Loop Optimization in SessionView
 **Learning:** Found an opportunity to optimize a nested loop mapping clips to scenes in `SessionView`. The loop iterates over all scenes for every clip, but a clip can only belong to one scene. By adding a `break` statement once a match is found, we reduce the loop iterations by ~50% on average, improving performance during render.
 **Action:** Always look for opportunities to early-return or break out of loops when a match is found, especially when dealing with one-to-many or one-to-one relationships.
+## 2026-04-29 - TypedArray Allocation in High-Frequency Audio/Visual Render Loops
+**Learning:** Found a severe garbage collection bottleneck where `new Float32Array()` was being allocated on every call to `getAnalyserData` inside `WebAudioAdapter`. Since visualizer components poll these methods at 60fps per track, it rapidly overwhelmed the garbage collector and caused UI micro-stutters.
+**Action:** Always cache and reuse `TypedArray` objects (`Float32Array`, `Uint8Array`, etc.) in high-frequency polling methods. Reallocate them only when the required size (e.g., `fftSize`) changes.
