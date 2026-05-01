@@ -7,3 +7,6 @@
 ## 2026-04-28 - Loop Optimization in SessionView
 **Learning:** Found an opportunity to optimize a nested loop mapping clips to scenes in `SessionView`. The loop iterates over all scenes for every clip, but a clip can only belong to one scene. By adding a `break` statement once a match is found, we reduce the loop iterations by ~50% on average, improving performance during render.
 **Action:** Always look for opportunities to early-return or break out of loops when a match is found, especially when dealing with one-to-many or one-to-one relationships.
+## 2026-05-15 - Prefix Lookup for SessionView Optimization
+**Learning:** Found an opportunity to further optimize the nested loop mapping clips to scenes in `SessionView`. Although the previous optimization used a `break` to early return, it still resulted in an O(Scenes × Clips) complexity in the worst case. By using a Set of unique string lengths for the scene IDs and performing prefix matching against a Map of scene IDs, the complexity is reduced to O(Clips × Unique Scene ID Lengths), which is roughly O(Clips).
+**Action:** Always consider using hash map lookups combined with length-based prefix matching when searching for prefixes among a large set of possible values to avoid O(N*M) looping structures.
