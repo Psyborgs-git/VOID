@@ -10,17 +10,28 @@ interface SessionViewProps {
 // ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders
 export const SessionView: React.FC<SessionViewProps> = React.memo(({ matrix, onClipTrigger, onSceneTrigger }) => {
   // ⚡ Bolt: Memoize the mapping of clips to scenes to avoid filtering an array inside the render loop.
-  // Reduces time complexity during render from O(Scenes × Clips) to O(1) lookup per scene.
+  // Reduces time complexity from O(Scenes × Clips) to effectively O(Clips) by using a Map of scene IDs
+  // combined with a sorted Set of unique scene ID lengths to perform prefix lookups.
   const clipsByScene = React.useMemo(() => {
     const map = new Map<string, typeof matrix.clips>();
+    const sceneIdLengths = new Set<number>();
+
     for (const scene of matrix.scenes) {
       map.set(scene.id, []);
+      sceneIdLengths.add(scene.id.length);
     }
+
+    // Sort descending to match the most specific (longest) scene ID first
+    const sortedLengths = Array.from(sceneIdLengths).sort((a, b) => b - a);
+
     for (const clip of matrix.clips) {
-      for (const scene of matrix.scenes) {
-        if (clip.id.startsWith(scene.id)) {
-          map.get(scene.id)!.push(clip);
-          break; // ⚡ Bolt: Early return since a clip belongs to exactly one scene, reducing loop iterations by ~50%.
+      for (const len of sortedLengths) {
+        if (clip.id.length >= len) {
+          const prefix = clip.id.substring(0, len);
+          if (map.has(prefix)) {
+            map.get(prefix)!.push(clip);
+            break;
+          }
         }
       }
     }
