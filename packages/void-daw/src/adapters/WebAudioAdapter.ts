@@ -58,8 +58,23 @@ export class WebAudioAdapter implements AudioPort {
     return `${type}-node`;
   }
 
+  // ⚡ Bolt: Cache Float32Arrays per track and fftSize to prevent memory allocations in high-frequency
+  // audio/visual render loops (e.g., 60fps), avoiding severe garbage collection micro-stutters.
+  private analyserDataCache = new Map<string, Float32Array>();
+
   getAnalyserData(trackId: string, fftSize: number): Float32Array {
-    return new Float32Array(fftSize);
+    const cacheKey = `${trackId}-${fftSize}`;
+    let dataArray = this.analyserDataCache.get(cacheKey);
+
+    if (!dataArray) {
+      dataArray = new Float32Array(fftSize);
+      this.analyserDataCache.set(cacheKey, dataArray);
+    }
+
+    // In a real implementation, we would populate dataArray here:
+    // analyserNode.getFloatTimeDomainData(dataArray) or getFloatFrequencyData(dataArray)
+
+    return dataArray;
   }
 
   getPeakLevel(trackId: string): { peak: number; rms: number } {
