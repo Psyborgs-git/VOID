@@ -10,3 +10,6 @@
 ## 2026-05-15 - Prefix Lookup for SessionView Optimization
 **Learning:** Found an opportunity to further optimize the nested loop mapping clips to scenes in `SessionView`. Although the previous optimization used a `break` to early return, it still resulted in an O(Scenes × Clips) complexity in the worst case. By using a Set of unique string lengths for the scene IDs and performing prefix matching against a Map of scene IDs, the complexity is reduced to O(Clips × Unique Scene ID Lengths), which is roughly O(Clips).
 **Action:** Always consider using hash map lookups combined with length-based prefix matching when searching for prefixes among a large set of possible values to avoid O(N*M) looping structures.
+## 2026-05-16 - TypedArray Allocation in Render Loops
+**Learning:** High-frequency audio or visual polling loops (e.g. 60fps WebAudio render cycles) in `WebAudioAdapter` were repeatedly allocating new `Float32Array` objects using `new Float32Array()`. This creates severe garbage collection pressure and can lead to UI micro-stutters.
+**Action:** In these high-frequency code paths, explicitly cache and reuse `TypedArray` objects using a `Map` (keyed by instance or track ID). Only allocate a new array if one doesn't exist or if its required size (`fftSize`) changes.
