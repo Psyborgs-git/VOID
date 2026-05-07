@@ -4,6 +4,9 @@ import { AudioPort, AudioTrackRef, ClipRef, AudioNodeRef, TrackType, ClipData } 
 export class WebAudioAdapter implements AudioPort {
   private context: AudioContext;
 
+  // ⚡ Bolt: Cache TypedArrays to prevent GC pressure during high-frequency audio/visual polling (e.g., 60fps render loops)
+  private analyserDataCache: Map<string, Float32Array> = new Map();
+
   constructor() {
     this.context = new window.AudioContext();
   }
@@ -59,7 +62,18 @@ export class WebAudioAdapter implements AudioPort {
   }
 
   getAnalyserData(trackId: string, fftSize: number): Float32Array {
-    return new Float32Array(fftSize);
+    const cacheKey = `${trackId}-${fftSize}`;
+    let data = this.analyserDataCache.get(cacheKey);
+
+    if (!data) {
+      data = new Float32Array(fftSize);
+      this.analyserDataCache.set(cacheKey, data);
+    }
+
+    // Note: In a real implementation, we would populate `data` from the AnalyserNode here
+    // e.g., analyserNode.getFloatTimeDomainData(data);
+
+    return data;
   }
 
   getPeakLevel(trackId: string): { peak: number; rms: number } {
