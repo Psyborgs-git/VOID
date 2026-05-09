@@ -10,3 +10,6 @@
 ## 2026-05-15 - Prefix Lookup for SessionView Optimization
 **Learning:** Found an opportunity to further optimize the nested loop mapping clips to scenes in `SessionView`. Although the previous optimization used a `break` to early return, it still resulted in an O(Scenes × Clips) complexity in the worst case. By using a Set of unique string lengths for the scene IDs and performing prefix matching against a Map of scene IDs, the complexity is reduced to O(Clips × Unique Scene ID Lengths), which is roughly O(Clips).
 **Action:** Always consider using hash map lookups combined with length-based prefix matching when searching for prefixes among a large set of possible values to avoid O(N*M) looping structures.
+## 2024-05-20 - GC Stutters from TypedArray Allocations in Audio Callbacks
+**Learning:** Found a major performance bottleneck where a `new Float32Array(fftSize)` was being allocated on *every* call to `getAnalyserData`. In a 60fps UI render cycle for audio visualization, this causes massive object churn resulting in severe garbage collection pressure and micro-stutters.
+**Action:** Always cache and reuse `TypedArray` objects in high-frequency audio or visual polling loops instead of allocating new ones, unless the requested array size changes dynamically.
