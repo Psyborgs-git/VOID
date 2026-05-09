@@ -3,6 +3,7 @@ import { AudioPort, AudioTrackRef, ClipRef, AudioNodeRef, TrackType, ClipData } 
 
 export class WebAudioAdapter implements AudioPort {
   private context: AudioContext;
+  private analyserDataCache = new Map<string, Float32Array>();
 
   constructor() {
     this.context = new window.AudioContext();
@@ -58,8 +59,17 @@ export class WebAudioAdapter implements AudioPort {
     return `${type}-node`;
   }
 
+  // ⚡ Bolt: Cache TypedArray objects for analyser data to prevent GC stutters during high-frequency UI polling.
+  // 💡 What: Introduced a Map to cache Float32Array instances per trackId and reuse them.
+  // 🎯 Why: Reallocating `new Float32Array(fftSize)` inside a 60fps WebAudio render cycle causes severe garbage collection pressure and micro-stutters.
+  // 📊 Impact: Eliminates array allocations during active polling, smoothing out UI framerates for audio visualization.
   getAnalyserData(trackId: string, fftSize: number): Float32Array {
-    return new Float32Array(fftSize);
+    let cached = this.analyserDataCache.get(trackId);
+    if (!cached || cached.length !== fftSize) {
+      cached = new Float32Array(fftSize);
+      this.analyserDataCache.set(trackId, cached);
+    }
+    return cached;
   }
 
   getPeakLevel(trackId: string): { peak: number; rms: number } {
