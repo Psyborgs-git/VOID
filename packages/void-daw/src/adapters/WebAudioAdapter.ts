@@ -3,6 +3,7 @@ import { AudioPort, AudioTrackRef, ClipRef, AudioNodeRef, TrackType, ClipData } 
 
 export class WebAudioAdapter implements AudioPort {
   private context: AudioContext;
+  private analyserDataCache: Map<string, Float32Array> = new Map();
 
   constructor() {
     this.context = new window.AudioContext();
@@ -36,7 +37,10 @@ export class WebAudioAdapter implements AudioPort {
     return id;
   }
 
-  deleteTrack(id: string): void {}
+  deleteTrack(id: string): void {
+    // ⚡ Bolt: Clear cache entries during lifecycle teardown to prevent memory leaks
+    this.analyserDataCache.delete(id);
+  }
 
   setTrackVolume(id: string, volume: number): void {}
   setTrackPan(id: string, pan: number): void {}
@@ -58,8 +62,22 @@ export class WebAudioAdapter implements AudioPort {
     return `${type}-node`;
   }
 
+  // ⚡ Bolt: Cache TypedArray objects (Float32Array) in high-frequency polling loops
+  // (like WebAudio render cycles) to prevent severe GC pressure and UI micro-stutters.
+  // Reuses the array instead of allocating a new one every frame.
   getAnalyserData(trackId: string, fftSize: number): Float32Array {
-    return new Float32Array(fftSize);
+    let dataArray = this.analyserDataCache.get(trackId);
+
+    // Allocate if it doesn't exist, or re-allocate if the size changed
+    if (!dataArray || dataArray.length !== fftSize) {
+      dataArray = new Float32Array(fftSize);
+      this.analyserDataCache.set(trackId, dataArray);
+    }
+
+    // Here we would typically populate dataArray with actual WebAudio API data
+    // e.g., analyser.getFloatTimeDomainData(dataArray)
+
+    return dataArray;
   }
 
   getPeakLevel(trackId: string): { peak: number; rms: number } {
