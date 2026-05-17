@@ -3,6 +3,7 @@ import { AudioPort, AudioTrackRef, ClipRef, AudioNodeRef, TrackType, ClipData } 
 
 export class WebAudioAdapter implements AudioPort {
   private context: AudioContext;
+  private analyserDataCache: Map<string, Float32Array> = new Map();
 
   constructor() {
     this.context = new window.AudioContext();
@@ -36,7 +37,10 @@ export class WebAudioAdapter implements AudioPort {
     return id;
   }
 
-  deleteTrack(id: string): void {}
+  deleteTrack(id: string): void {
+    // ⚡ Bolt: Cleanup cache to prevent memory leak
+    this.analyserDataCache.delete(id);
+  }
 
   setTrackVolume(id: string, volume: number): void {}
   setTrackPan(id: string, pan: number): void {}
@@ -59,7 +63,14 @@ export class WebAudioAdapter implements AudioPort {
   }
 
   getAnalyserData(trackId: string, fftSize: number): Float32Array {
-    return new Float32Array(fftSize);
+    // ⚡ Bolt: Cache TypedArray (Float32Array) instead of instantiating a new one on every call
+    // This prevents severe garbage collection pressure and UI micro-stutters during high-frequency polling
+    let cached = this.analyserDataCache.get(trackId);
+    if (!cached || cached.length !== fftSize) {
+      cached = new Float32Array(fftSize);
+      this.analyserDataCache.set(trackId, cached);
+    }
+    return cached;
   }
 
   getPeakLevel(trackId: string): { peak: number; rms: number } {
