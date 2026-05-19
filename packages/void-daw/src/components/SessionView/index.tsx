@@ -7,6 +7,28 @@ interface SessionViewProps {
   onSceneTrigger?: (sceneId: string) => void;
 }
 
+// ⚡ Bolt: Extracted SceneButton to prevent O(N) re-renders across the entire collection when only one scene updates
+const SceneButton = React.memo(({ scene, onTrigger }: { scene: any, onTrigger?: (id: string) => void }) => (
+  <button
+    onClick={() => onTrigger?.(scene.id)}
+    style={{ padding: '8px', backgroundColor: 'var(--void-surface)', color: 'white', border: '1px solid var(--void-border)' }}
+  >
+    {scene.name}
+  </button>
+));
+SceneButton.displayName = 'SceneButton';
+
+// ⚡ Bolt: Extracted ClipButton to prevent O(N) re-renders across the entire collection when only one clip updates
+const ClipButton = React.memo(({ clip, onTrigger }: { clip: any, onTrigger?: (id: string) => void }) => (
+  <button
+    onClick={() => onTrigger?.(clip.id)}
+    style={{ padding: '24px', backgroundColor: clip.color || 'var(--void-accent)', color: 'white', border: 'none', borderRadius: '4px' }}
+  >
+    {clip.name}
+  </button>
+));
+ClipButton.displayName = 'ClipButton';
+
 // ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders
 export const SessionView: React.FC<SessionViewProps> = React.memo(({ matrix, onClipTrigger, onSceneTrigger }) => {
   // ⚡ Bolt: Memoize the mapping of clips to scenes to avoid filtering an array inside the render loop.
@@ -46,20 +68,9 @@ export const SessionView: React.FC<SessionViewProps> = React.memo(({ matrix, onC
           const sceneClips = clipsByScene.get(scene.id) || [];
           return (
             <div key={scene.id} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <button
-                onClick={() => onSceneTrigger?.(scene.id)}
-                style={{ padding: '8px', backgroundColor: 'var(--void-surface)', color: 'white', border: '1px solid var(--void-border)' }}
-              >
-                {scene.name}
-              </button>
+              <SceneButton scene={scene} onTrigger={onSceneTrigger} />
               {sceneClips.map(clip => (
-                 <button
-                  key={clip.id}
-                  onClick={() => onClipTrigger?.(clip.id)}
-                  style={{ padding: '24px', backgroundColor: clip.color || 'var(--void-accent)', color: 'white', border: 'none', borderRadius: '4px' }}
-                 >
-                   {clip.name}
-                 </button>
+                 <ClipButton key={clip.id} clip={clip} onTrigger={onClipTrigger} />
               ))}
             </div>
           );

@@ -13,3 +13,6 @@
 ## 2026-05-18 - TypedArray Caching in WebAudioAdapter
 **Learning:** Found a major performance bottleneck where `new Float32Array(fftSize)` was being called on every `getAnalyserData` frame. In high-frequency polling loops like WebAudio adapters (running at ~60fps), instantiating new TypedArrays constantly causes severe garbage collection pressure and UI micro-stutters.
 **Action:** Always cache and reuse TypedArray objects (like Float32Array) per track, pulling from a Map rather than instantiating new objects. Ensure to properly clean up the cache on lifecycle teardown methods like `deleteTrack` to avoid memory leaks.
+## 2026-05-19 - React.memo for Array/Matrix Element Sub-components
+**Learning:** Found a performance bottleneck in `SessionView` where inline mapping of DOM elements like `<button>` inside loops caused $O(N)$ re-renders across the entire collection when only the parent matrix reference changed. Rendering simple elements inline without wrapping them in components prevents React from being able to memoize them.
+**Action:** Always extract items rendered inside of loops (especially matrices or large lists like DAW tracks/clips) into their own sub-components and wrap them in `React.memo` to ensure that sibling elements do not needlessly re-render when they haven't changed.
