@@ -1,5 +1,28 @@
 import React from 'react';
-import { ClipMatrix } from 'void-core';
+import { ClipMatrix, SessionClip } from 'void-core';
+
+interface SessionClipButtonProps {
+  clip: SessionClip;
+  onClipTrigger?: (clipId: string) => void;
+}
+
+// ⚡ Bolt: Wrapped individual clip items in React.memo to prevent O(N) re-renders
+// across the entire collection of clips when the parent SessionView updates.
+const SessionClipButton: React.FC<SessionClipButtonProps> = React.memo(({ clip, onClipTrigger }) => (
+  <button
+    onClick={() => onClipTrigger?.(clip.id)}
+    style={{
+      padding: '24px',
+      backgroundColor: clip.color || 'var(--void-accent)',
+      color: 'white',
+      border: 'none',
+      borderRadius: '4px'
+    }}
+  >
+    {clip.name}
+  </button>
+));
+SessionClipButton.displayName = 'SessionClipButton';
 
 interface SessionViewProps {
   matrix: ClipMatrix;
@@ -53,13 +76,11 @@ export const SessionView: React.FC<SessionViewProps> = React.memo(({ matrix, onC
                 {scene.name}
               </button>
               {sceneClips.map(clip => (
-                 <button
-                  key={clip.id}
-                  onClick={() => onClipTrigger?.(clip.id)}
-                  style={{ padding: '24px', backgroundColor: clip.color || 'var(--void-accent)', color: 'white', border: 'none', borderRadius: '4px' }}
-                 >
-                   {clip.name}
-                 </button>
+                 <SessionClipButton
+                   key={clip.id}
+                   clip={clip}
+                   onClipTrigger={onClipTrigger}
+                 />
               ))}
             </div>
           );
