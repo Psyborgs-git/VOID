@@ -1,11 +1,61 @@
-import React from 'react';
-import { ClipMatrix } from 'void-core';
+import React, { useCallback } from 'react';
+import { ClipMatrix, Scene, SessionClip } from 'void-core';
 
 interface SessionViewProps {
   matrix: ClipMatrix;
   onClipTrigger?: (clipId: string) => void;
   onSceneTrigger?: (sceneId: string) => void;
 }
+
+// ⚡ Bolt: Stable empty array reference to prevent memo invalidation for empty scenes
+const EMPTY_ARRAY: SessionClip[] = [];
+
+// ⚡ Bolt: Extracted clip button into a React.memo component to prevent O(N) re-renders
+const SessionClipButton = React.memo(({ clip, onClipTrigger }: { clip: SessionClip; onClipTrigger?: (clipId: string) => void }) => {
+  // Use a stable click handler bound to the clip ID
+  const handleClick = useCallback(() => onClipTrigger?.(clip.id), [onClipTrigger, clip.id]);
+  return (
+    <button
+      onClick={handleClick}
+      style={{ padding: '24px', backgroundColor: clip.color || 'var(--void-accent)', color: 'white', border: 'none', borderRadius: '4px' }}
+    >
+      {clip.name}
+    </button>
+  );
+});
+SessionClipButton.displayName = 'SessionClipButton';
+
+// ⚡ Bolt: Extracted scene column into a React.memo component to prevent re-rendering entire scenes when unrelated state changes
+const SceneColumn = React.memo(({
+  scene,
+  sceneClips,
+  onSceneTrigger,
+  onClipTrigger
+}: {
+  scene: Scene;
+  sceneClips: SessionClip[];
+  onSceneTrigger?: (sceneId: string) => void;
+  onClipTrigger?: (clipId: string) => void;
+}) => {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <button
+        onClick={() => onSceneTrigger?.(scene.id)}
+        style={{ padding: '8px', backgroundColor: 'var(--void-surface)', color: 'white', border: '1px solid var(--void-border)' }}
+      >
+        {scene.name}
+      </button>
+      {sceneClips.map(clip => (
+        <SessionClipButton
+          key={clip.id}
+          clip={clip}
+          onClipTrigger={onClipTrigger}
+        />
+      ))}
+    </div>
+  );
+});
+SceneColumn.displayName = 'SceneColumn';
 
 // ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders
 export const SessionView: React.FC<SessionViewProps> = React.memo(({ matrix, onClipTrigger, onSceneTrigger }) => {
@@ -42,28 +92,15 @@ export const SessionView: React.FC<SessionViewProps> = React.memo(({ matrix, onC
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '16px' }}>
       <h2>Session View</h2>
       <div style={{ display: 'flex', gap: '16px' }}>
-        {matrix.scenes.map(scene => {
-          const sceneClips = clipsByScene.get(scene.id) || [];
-          return (
-            <div key={scene.id} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <button
-                onClick={() => onSceneTrigger?.(scene.id)}
-                style={{ padding: '8px', backgroundColor: 'var(--void-surface)', color: 'white', border: '1px solid var(--void-border)' }}
-              >
-                {scene.name}
-              </button>
-              {sceneClips.map(clip => (
-                 <button
-                  key={clip.id}
-                  onClick={() => onClipTrigger?.(clip.id)}
-                  style={{ padding: '24px', backgroundColor: clip.color || 'var(--void-accent)', color: 'white', border: 'none', borderRadius: '4px' }}
-                 >
-                   {clip.name}
-                 </button>
-              ))}
-            </div>
-          );
-        })}
+        {matrix.scenes.map(scene => (
+          <SceneColumn
+            key={scene.id}
+            scene={scene}
+            sceneClips={clipsByScene.get(scene.id) || EMPTY_ARRAY}
+            onSceneTrigger={onSceneTrigger}
+            onClipTrigger={onClipTrigger}
+          />
+        ))}
       </div>
     </div>
   );
