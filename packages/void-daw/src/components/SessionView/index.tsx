@@ -1,11 +1,27 @@
 import React from 'react';
-import { ClipMatrix } from 'void-core';
+import { ClipMatrix, SessionClip } from 'void-core';
 
 interface SessionViewProps {
   matrix: ClipMatrix;
   onClipTrigger?: (clipId: string) => void;
   onSceneTrigger?: (sceneId: string) => void;
 }
+
+// ⚡ Bolt: Stable empty array reference to avoid creating a new array on every render
+const EMPTY_ARRAY: SessionClip[] = [];
+
+// ⚡ Bolt: Extract mapped clip into a memoized component to prevent O(N) re-renders
+const MemoizedClipButton = React.memo(({ clip, onClipTrigger }: { clip: SessionClip; onClipTrigger?: (clipId: string) => void }) => {
+  return (
+    <button
+      onClick={() => onClipTrigger?.(clip.id)}
+      style={{ padding: '24px', backgroundColor: clip.color || 'var(--void-accent)', color: 'white', border: 'none', borderRadius: '4px' }}
+    >
+      {clip.name}
+    </button>
+  );
+});
+MemoizedClipButton.displayName = 'MemoizedClipButton';
 
 // ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders
 export const SessionView: React.FC<SessionViewProps> = React.memo(({ matrix, onClipTrigger, onSceneTrigger }) => {
@@ -43,7 +59,7 @@ export const SessionView: React.FC<SessionViewProps> = React.memo(({ matrix, onC
       <h2>Session View</h2>
       <div style={{ display: 'flex', gap: '16px' }}>
         {matrix.scenes.map(scene => {
-          const sceneClips = clipsByScene.get(scene.id) || [];
+          const sceneClips = clipsByScene.get(scene.id) || EMPTY_ARRAY;
           return (
             <div key={scene.id} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button
@@ -53,13 +69,11 @@ export const SessionView: React.FC<SessionViewProps> = React.memo(({ matrix, onC
                 {scene.name}
               </button>
               {sceneClips.map(clip => (
-                 <button
-                  key={clip.id}
-                  onClick={() => onClipTrigger?.(clip.id)}
-                  style={{ padding: '24px', backgroundColor: clip.color || 'var(--void-accent)', color: 'white', border: 'none', borderRadius: '4px' }}
-                 >
-                   {clip.name}
-                 </button>
+                 <MemoizedClipButton
+                   key={clip.id}
+                   clip={clip}
+                   onClipTrigger={onClipTrigger}
+                 />
               ))}
             </div>
           );

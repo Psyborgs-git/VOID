@@ -13,3 +13,6 @@
 ## 2026-05-18 - TypedArray Caching in WebAudioAdapter
 **Learning:** Found a major performance bottleneck where `new Float32Array(fftSize)` was being called on every `getAnalyserData` frame. In high-frequency polling loops like WebAudio adapters (running at ~60fps), instantiating new TypedArrays constantly causes severe garbage collection pressure and UI micro-stutters.
 **Action:** Always cache and reuse TypedArray objects (like Float32Array) per track, pulling from a Map rather than instantiating new objects. Ensure to properly clean up the cache on lifecycle teardown methods like `deleteTrack` to avoid memory leaks.
+## 2026-05-19 - React.memo invalidation by inline empty arrays
+**Learning:** In React, using an inline fallback like `const sceneClips = clipsByScene.get(scene.id) || [];` inside a mapped loop generates a completely new array reference on every render when the key isn't found. This defeats `React.memo` downstream, forcing unnecessary O(N) re-renders across nested child component lists.
+**Action:** Extract a stable empty array reference `const EMPTY_ARRAY = []` outside the component body to maintain reference equality when falling back, preserving React.memo optimization boundaries.
