@@ -1,5 +1,22 @@
 import React from 'react';
-import { ClipMatrix } from 'void-core';
+import { ClipMatrix, SessionClip } from 'void-core';
+
+const EMPTY_CLIPS: SessionClip[] = [];
+
+interface ClipButtonProps {
+  clip: SessionClip;
+  onTrigger?: (clipId: string) => void;
+}
+
+const ClipButton = React.memo(({ clip, onTrigger }: ClipButtonProps) => (
+  <button
+    onClick={() => onTrigger?.(clip.id)}
+    style={{ padding: '24px', backgroundColor: clip.color || 'var(--void-accent)', color: 'white', border: 'none', borderRadius: '4px' }}
+  >
+    {clip.name}
+  </button>
+));
+ClipButton.displayName = 'ClipButton';
 
 interface SessionViewProps {
   matrix: ClipMatrix;
@@ -43,7 +60,7 @@ export const SessionView: React.FC<SessionViewProps> = React.memo(({ matrix, onC
       <h2>Session View</h2>
       <div style={{ display: 'flex', gap: '16px' }}>
         {matrix.scenes.map(scene => {
-          const sceneClips = clipsByScene.get(scene.id) || [];
+          const sceneClips = clipsByScene.get(scene.id) || EMPTY_CLIPS;
           return (
             <div key={scene.id} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button
@@ -53,13 +70,7 @@ export const SessionView: React.FC<SessionViewProps> = React.memo(({ matrix, onC
                 {scene.name}
               </button>
               {sceneClips.map(clip => (
-                 <button
-                  key={clip.id}
-                  onClick={() => onClipTrigger?.(clip.id)}
-                  style={{ padding: '24px', backgroundColor: clip.color || 'var(--void-accent)', color: 'white', border: 'none', borderRadius: '4px' }}
-                 >
-                   {clip.name}
-                 </button>
+                <ClipButton key={clip.id} clip={clip} onTrigger={onClipTrigger} />
               ))}
             </div>
           );
