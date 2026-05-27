@@ -1,11 +1,40 @@
 import React from 'react';
-import { ClipMatrix } from 'void-core';
+import { ClipMatrix, SessionClip, Scene } from 'void-core';
 
 interface SessionViewProps {
   matrix: ClipMatrix;
   onClipTrigger?: (clipId: string) => void;
   onSceneTrigger?: (sceneId: string) => void;
 }
+
+// ⚡ Bolt: Stable reference for empty arrays to prevent React.memo invalidation
+const EMPTY_ARRAY: SessionClip[] = [];
+
+// ⚡ Bolt: Extracted mapped elements into React.memo wrapped components to prevent O(N) re-renders
+const ClipButton = React.memo(({ clip, onClipTrigger }: { clip: SessionClip, onClipTrigger?: (clipId: string) => void }) => (
+  <button
+    onClick={() => onClipTrigger?.(clip.id)}
+    style={{ padding: '24px', backgroundColor: clip.color || 'var(--void-accent)', color: 'white', border: 'none', borderRadius: '4px' }}
+  >
+    {clip.name}
+  </button>
+));
+ClipButton.displayName = 'ClipButton';
+
+const SceneColumn = React.memo(({ scene, clips, onSceneTrigger, onClipTrigger }: { scene: Scene, clips: SessionClip[], onSceneTrigger?: (sceneId: string) => void, onClipTrigger?: (clipId: string) => void }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <button
+      onClick={() => onSceneTrigger?.(scene.id)}
+      style={{ padding: '8px', backgroundColor: 'var(--void-surface)', color: 'white', border: '1px solid var(--void-border)' }}
+    >
+      {scene.name}
+    </button>
+    {clips.map(clip => (
+      <ClipButton key={clip.id} clip={clip} onClipTrigger={onClipTrigger} />
+    ))}
+  </div>
+));
+SceneColumn.displayName = 'SceneColumn';
 
 // ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders
 export const SessionView: React.FC<SessionViewProps> = React.memo(({ matrix, onClipTrigger, onSceneTrigger }) => {
@@ -43,25 +72,15 @@ export const SessionView: React.FC<SessionViewProps> = React.memo(({ matrix, onC
       <h2>Session View</h2>
       <div style={{ display: 'flex', gap: '16px' }}>
         {matrix.scenes.map(scene => {
-          const sceneClips = clipsByScene.get(scene.id) || [];
+          const sceneClips = clipsByScene.get(scene.id) || EMPTY_ARRAY;
           return (
-            <div key={scene.id} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <button
-                onClick={() => onSceneTrigger?.(scene.id)}
-                style={{ padding: '8px', backgroundColor: 'var(--void-surface)', color: 'white', border: '1px solid var(--void-border)' }}
-              >
-                {scene.name}
-              </button>
-              {sceneClips.map(clip => (
-                 <button
-                  key={clip.id}
-                  onClick={() => onClipTrigger?.(clip.id)}
-                  style={{ padding: '24px', backgroundColor: clip.color || 'var(--void-accent)', color: 'white', border: 'none', borderRadius: '4px' }}
-                 >
-                   {clip.name}
-                 </button>
-              ))}
-            </div>
+            <SceneColumn
+              key={scene.id}
+              scene={scene}
+              clips={sceneClips}
+              onSceneTrigger={onSceneTrigger}
+              onClipTrigger={onClipTrigger}
+            />
           );
         })}
       </div>
