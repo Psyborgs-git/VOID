@@ -1,11 +1,57 @@
 import React from 'react';
-import { ClipMatrix } from 'void-core';
+import { ClipMatrix, SessionClip, Scene } from 'void-core';
+
+interface ClipButtonProps {
+  clip: SessionClip;
+  onTrigger?: (clipId: string) => void;
+}
+
+// ⚡ Bolt: Extract mapped inline element to prevent re-renders when parent collection updates
+const ClipButton: React.FC<ClipButtonProps> = React.memo(({ clip, onTrigger }) => {
+  return (
+    <button
+      onClick={() => onTrigger?.(clip.id)}
+      style={{ padding: '24px', backgroundColor: clip.color || 'var(--void-accent)', color: 'white', border: 'none', borderRadius: '4px' }}
+    >
+      {clip.name}
+    </button>
+  );
+});
+ClipButton.displayName = 'ClipButton';
+
+interface SceneColumnProps {
+  scene: Scene;
+  clips: SessionClip[];
+  onSceneTrigger?: (sceneId: string) => void;
+  onClipTrigger?: (clipId: string) => void;
+}
+
+// ⚡ Bolt: Extract mapped inline element to prevent re-renders when parent collection updates
+const SceneColumn: React.FC<SceneColumnProps> = React.memo(({ scene, clips, onSceneTrigger, onClipTrigger }) => {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <button
+        onClick={() => onSceneTrigger?.(scene.id)}
+        style={{ padding: '8px', backgroundColor: 'var(--void-surface)', color: 'white', border: '1px solid var(--void-border)' }}
+      >
+        {scene.name}
+      </button>
+      {clips.map(clip => (
+        <ClipButton key={clip.id} clip={clip} onTrigger={onClipTrigger} />
+      ))}
+    </div>
+  );
+});
+SceneColumn.displayName = 'SceneColumn';
 
 interface SessionViewProps {
   matrix: ClipMatrix;
   onClipTrigger?: (clipId: string) => void;
   onSceneTrigger?: (sceneId: string) => void;
 }
+
+// ⚡ Bolt: Stable reference for fallback array to prevent React.memo invalidation
+const EMPTY_CLIPS: SessionClip[] = [];
 
 // ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders
 export const SessionView: React.FC<SessionViewProps> = React.memo(({ matrix, onClipTrigger, onSceneTrigger }) => {
@@ -43,25 +89,15 @@ export const SessionView: React.FC<SessionViewProps> = React.memo(({ matrix, onC
       <h2>Session View</h2>
       <div style={{ display: 'flex', gap: '16px' }}>
         {matrix.scenes.map(scene => {
-          const sceneClips = clipsByScene.get(scene.id) || [];
+          const sceneClips = clipsByScene.get(scene.id) || EMPTY_CLIPS;
           return (
-            <div key={scene.id} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <button
-                onClick={() => onSceneTrigger?.(scene.id)}
-                style={{ padding: '8px', backgroundColor: 'var(--void-surface)', color: 'white', border: '1px solid var(--void-border)' }}
-              >
-                {scene.name}
-              </button>
-              {sceneClips.map(clip => (
-                 <button
-                  key={clip.id}
-                  onClick={() => onClipTrigger?.(clip.id)}
-                  style={{ padding: '24px', backgroundColor: clip.color || 'var(--void-accent)', color: 'white', border: 'none', borderRadius: '4px' }}
-                 >
-                   {clip.name}
-                 </button>
-              ))}
-            </div>
+            <SceneColumn
+              key={scene.id}
+              scene={scene}
+              clips={sceneClips}
+              onSceneTrigger={onSceneTrigger}
+              onClipTrigger={onClipTrigger}
+            />
           );
         })}
       </div>
